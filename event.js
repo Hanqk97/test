@@ -1,67 +1,103 @@
-function new_event (name, date_time, color, priority) {
+function newevent(){
+                var username = document.getElementById("username").value;
+                var location = document.getElementsByClassName("location")[0].value;
+                var title = document.getElementsByClassName("title")[0].value;
+                var date = document.getElementsByClassName("date")[0].innerHTML;
+                var time = document.getElementsByClassName("time")[0].value;
+                var description = document.getElementsByClassName("description")[0].value;
+                var group = document.getElementsByClassName("group")[0].value;
+                var dataString = "username=" + encodeURIComponent(username) + "&group=" + encodeURIComponent(group) + "&title=" + encodeURIComponent(title) + "&date=" + encodeURIComponent(date) + "&time=" + encodeURIComponent(time) + "&location=" + encodeURIComponent(location) + "&description=" + encodeURIComponent(description);
+                var xmlHttp = new XMLHttpRequest(); // Initialize our XMLHttpRequest instance
+                xmlHttp.open("POST", "event.php", true); // Starting a POST request (NEVER send passwords as GET variables!!!)
+                xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded"); // It's easy to forget this line for POST requests
+                xmlHttp.addEventListener("load", function(event){
+                    var jsonData = JSON.parse(event.target.responseText); // parse the JSON into a JavaScript object
+                    if(jsonData.success){
+                        alert("event saved!");
+                    }else{
+                        alert("save event failed."+jsonData.message);
+                    }
+                }, false); // Bind the callback to the load event
+                xmlHttp.send(dataString); // Send the data
+            }
 
-    this.name = name;
-    this.date_time = date_time; //yyyy-mm-ddThh:mm
+            function deleteevent(){
+                var eventid = document.getElementsByClassName("editid")[0].innerHTML;
+                // Make a URL-encoded string for passing POST data:
+                var dataString = "eventid=" + encodeURIComponent(eventid) + "&deleteflag=1";
+                var xmlHttp = new XMLHttpRequest(); // Initialize our XMLHttpRequest instance
+                xmlHttp.open("POST", "delete5.php", true); // Starting a POST request (NEVER send passwords as GET variables!!!)
+                xmlHttp.setRequestHeader("Content-Type" , "application/x-www-form-urlencoded"); // It's easy to forget this line for POST requests
+                xmlHttp.addEventListener("load", function(event){
+                    var jsonData = JSON.parse(event.target.responseText);
+                    if(jsonData.success){
+                        alert("event deleted!");
+                    }else{
+                        alert("delete event failed."+jsonData.message);
+                    }
+                }, false);
+                xmlHttp.send(dataString); // Send the data
+            }
+        document.getElementById("mydialog").getElementsByClassName("create")[0].addEventListener("click",newevent,false);
+        document.getElementById("editdialog").getElementsByClassName("delete")[0].addEventListener("click",deleteevent,false);
+        document.getElementById("editdialog").getElementsByClassName("edit")[0].addEventListener("click",rewriteevent,false);
 
-    let split1 = this.date_time.split('-'); //split1 = [yyyy, mm, ddThh:mm]
-    let split2 = split1[2].split('T'); //split2 = [dd, hh:mm]
-    let split3 = split2[1].split(':'); //split3 = [hh, mm]
-
-    this.year = Number(split1[0]);
-    this.month = Number(split1[1]);
-    this.day = Number(split2[0]);
-    this.hour = Number(split3[0]);
-    this.minute = Number(split3[1]);
-    this.color = color;
-    this.priority = priority;
-
-}
-
-function event (id, name, day, hour, minute, color, is_priority) {
-
-    this.name = name;
-    this.id = id;
-    this.hour = hour;
-    this.day = day;
-    this.minute = minute;
-    this.color = color;
-    this.is_priority = is_priority;
-
-}
-
-function add_event(event) {
-
-    const event_name = document.getElementById("event_name").value; // Get the event name from the form
-    let date_time = document.getElementById("event_date").value; // Get the event date from the form
-
-    let color = $("input[name='color']:checked").val();
-    let priority = document.getElementById('priority_level').checked;
-
-
-    let adding_event = new new_event (event_name, date_time, color, priority);
-
-    // Make a URL-encoded string for passing POST data:
-    const data = {
-        'event_name': event_name,
-        'year': adding_event.year,
-        'month': adding_event.month,
-        'day': adding_event.day,
-        'hour': adding_event.hour,
-        'minute': adding_event.minute,
-        'color': color,
-        'priority': priority
-    };
-
-    fetch("new_event.php", {
-            method: 'POST',
-            body: JSON.stringify(data),
-            headers: { 'content-type': 'application/json' }
-        })
-        .then(response => response.json())
-        .then(data => alert(data.success ? "Event has been added!" : `Error: event has not been added.`))
-        .catch(error => console.error('Error:',error));
-    updateCalendar();
-
-}
-
-document.getElementById("add").addEventListener("click", add_event, false);
+        
+        function editevent(){
+                var eventid = event.target.id; // Get the username from the form
+                var myRe = /[\d]/;
+                eventid = myRe.exec(eventid);
+                
+                // Make a URL-encoded string for passing POST data:
+                var dataString = "eventid=" + encodeURIComponent(eventid);
+                var xmlHttp = new XMLHttpRequest(); // Initialize our XMLHttpRequest instance
+                xmlHttp.open("POST", "editevent.php", true); // Starting a POST request (NEVER send passwords as GET variables!!!)
+                xmlHttp.setRequestHeader("Content-Type" , "application/x-www-form-urlencoded"); // It's easy to forget this line for POST requests
+                xmlHttp.addEventListener("load", function(event){
+                    var jsonData = JSON.parse(event.target.responseText); // parse the JSON into a JavaScript object
+                    var count=jsonData.count;
+                    jsonData=jsonData.editdata;
+                    edittitle = jsonData[0].title;
+                    editid = jsonData[0].id;
+                    editdate = jsonData[0].date;
+                    editlocation = jsonData[0].location;
+                    edittime = jsonData[0].time;
+                    editdescription = jsonData[0].description;
+                    document.getElementsByClassName("editdate")[0].innerHTML=editdate;
+                    document.getElementsByClassName("editlocation")[0].innerHTML=editlocation;
+                    document.getElementsByClassName("editid")[0].innerHTML=editid;
+                    document.getElementsByClassName("edittime")[0].innerHTML=edittime;
+                    document.getElementsByClassName("editdescription")[0].innerHTML=editdescription;
+                    document.getElementsByClassName("edittitle")[0].innerHTML=edittitle;
+                    
+                }, false); // Bind the callback to the load event
+                xmlHttp.send(dataString); // Send the data
+            }
+            
+            
+            function rewriteevent(){
+                var username = document.getElementById("username").value;
+                var location = document.getElementsByClassName("editlocation")[0].value;
+                var title = document.getElementsByClassName("edittitle")[0].value;
+                var date = document.getElementsByClassName("editdate")[0].innerHTML;
+                var time = document.getElementsByClassName("edittime")[0].value;
+                var description = document.getElementsByClassName("editdescription")[0].value;
+                var id = document.getElementsByClassName("editid")[0].innerHTML;
+                var dataString = "username=" + encodeURIComponent(username) + "&id=" + encodeURIComponent(id) + "&title=" + encodeURIComponent(title) + "&date=" + encodeURIComponent(date) + "&time=" + encodeURIComponent(time) + "&location=" + encodeURIComponent(location) + "&description=" + encodeURIComponent(description);
+                var xmlHttp = new XMLHttpRequest(); // Initialize our XMLHttpRequest instance
+                xmlHttp.open("POST", "rewriteevent.php", true); // Starting a POST request (NEVER send passwords as GET variables!!!)
+                xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded"); // It's easy to forget this line for POST requests
+                xmlHttp.addEventListener("load", function(event){
+                    var jsonData = JSON.parse(event.target.responseText); // parse the JSON into a JavaScript object
+                    if(jsonData.success){
+                        alert("event saved!");
+                    }else{
+                        alert("save event failed."+jsonData.message);
+                    }
+                }, false); // Bind the callback to the load event
+                xmlHttp.send(dataString); // Send the data
+            }
+            
+        
+        
+        
